@@ -1,6 +1,6 @@
 {
   "name": "aws-azure-login",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "description": "Use Azure AD SSO to log into the AWS CLI.",
   "main": "index.js",
   "author": {
@@ -29,7 +29,7 @@
     "test": "yarn eslint && yarn prettier:check"
   },
   "dependencies": {
-    "aws-sdk": "^2.935.0",
+    "aws-sdk": "^2.970.0",
     "bluebird": "^3.7.2",
     "cheerio": "1.0.0-rc.10",
     "commander": "^8.0.0",
