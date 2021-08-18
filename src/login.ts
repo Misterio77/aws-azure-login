@@ -43,6 +43,29 @@ interface Role {
  */
 const states = [
   {
+    name: "suspicious activity",
+    selectorX: `//div[text()="Suspicious activity detected"]`,
+    async handler(page: puppeteer.Page): Promise<void> {
+      debug("Waiting for verify button");
+      await page.waitForSelector(`input[value=Verify]:not(.moveOffScreen)`, {
+        visible: true,
+        timeout: 60000,
+      });
+
+      debug("Clicking verify button");
+      await page.click("input[value=Verify]:not(.moveOffScreen)");
+
+      debug("Waiting for otp button");
+      await page.waitForSelector(`[data-value=PhoneAppOTP]`, {
+        visible: true,
+        timeout: 60000,
+      });
+
+      debug("Clicking otp button");
+      await page.click("[data-value=PhoneAppOTP]");
+    },
+  },
+  {
     name: "coca-cola login",
     selector: `.signon-app`,
     async handler(
@@ -344,6 +367,14 @@ const states = [
         console.log(descriptionMessage);
       }
 
+      debug("Clearing input");
+      for (let i = 0; i < 100; i++) {
+        await page.keyboard.press("Backspace");
+      }
+
+      debug("Focusing on verification code input");
+      await page.focus(`input[name="otc"]`);
+
       let verificationCode: string;
 
       if (noPrompt && defaultTfaSecret) {
@@ -368,14 +399,6 @@ const states = [
             message: "Verification Code:",
           } as Question,
         ]));
-      }
-
-      debug("Focusing on verification code input");
-      await page.focus(`input[name="otc"]`);
-
-      debug("Clearing input");
-      for (let i = 0; i < 100; i++) {
-        await page.keyboard.press("Backspace");
       }
 
       debug("Typing verification code");
@@ -588,7 +611,7 @@ export const login = {
 
   // Load the profile
   async _loadProfileAsync(profileName: string): Promise<ProfileConfig> {
-    var profile = await awsConfig.getProfileConfigAsync(profileName);
+    let profile = await awsConfig.getProfileConfigAsync(profileName);
 
     const env = this._loadProfileFromEnv();
 
@@ -802,7 +825,11 @@ export const login = {
 
             let selected;
             try {
-              selected = await page.$(state.selector);
+              if (state.selectorX) {
+                [selected] = await page.$x(state.selectorX);
+              } else if (state.selector) {
+                selected = await page.$(state.selector);
+              }
             } catch (err) {
               if (err instanceof Error) {
                 // An error can be thrown if the page isn't in a good state.
